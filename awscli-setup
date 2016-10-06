@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# Program: AWS CLI auto install scirpt 
+# Author: shazi
+trap 'stop' SIGUSR1 SIGINT SIGHUP SIGQUIT SIGTERM SIGSTOP
+PROGRAMNAME=${0##*/}
+VERSION=1.0
+
+prefix="/usr/local/aws"
+prefix_bin="/usr/local/bin/aws"
+awsuri="https://s3.amazonaws.com/aws-cli/awscli-bundle.zip"
+awscli="awscli-bundle"
+tmpdir="/tmp"
+
+stop() {
+	exit 0
+}
+
+check_env(){
+	if [[ `which python` ]]; then
+		py_ver=`python --version 2>&1`
+		echo "The AWS CLI will be install in $py_ver"
+	else
+		echo "**check**: python not install."
+		exit 0
+	fi
+}
+
+get_package() {
+	echo -n "Download awscli package ..."
+	wget -q "$awsuri" -P "$tmpdir"
+	if [[ 0 -eq $? ]]; then
+		echo "OK"
+	else
+		echo "fail"
+		exit 0
+	fi
+}
+
+awscli_install() {
+	check_env
+	get_package
+	echo -n "unzip $awscli.zip ..."
+	unzip -q ${tmpdir}/${awscli}.zip -d /tmp
+	if [[ 0 -eq $? ]]; then
+		echo "OK"
+	else
+		echo "fail"
+		exit 0
+	fi
+
+	echo "Install awscli ..."
+	${tmpdir}/${awscli}/install -i "$prefix" -b "$prefix_bin"
+}
+
+awscli_install
