@@ -12,6 +12,12 @@ automated share ami to VPC list
 
 ### HowTo
 
+The first you must have an aws account list with same profile account
+
+```
+echo "your cross account id" >> "your_account".list
+```
+
 You need add profile to `~/.aws/{config,credentials}`
 
 ```
