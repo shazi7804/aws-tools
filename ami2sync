@@ -1,0 +1,47 @@
+#!/bin/bash
+PROFILE=$1
+AMI=$2
+LIST_FILE=${ENV}.list
+
+trap 'stop' SIGUSR1 SIGINT SIGHUP SIGQUIT SIGTERM SIGSTOP
+
+stop() {
+  exit 0
+}
+
+helpmsg() {
+  echo help
+}
+
+if [ -e $LIST_FILE ]; then
+   ACCOUNT=($(cat $LIST_FILE))
+fi
+
+Share_Work() {
+  SNAPSHOT_ID=$(aws ec2 describe-images --image-ids $AMI --profile $PROFILE | grep SnapshotId | awk -F '"' '{print $4}')
+ 
+  # share to list account
+  for (( i = 0; i < ${#ACCOUNT[@]}; i++ )); do
+    # share launch permission
+    aws ec2 modify-image-attribute --image-id $AMI --launch-permission "{\"Add\":[{\"UserId\":\"${ACCOUNT[i]}\"}]}" --profile $PROFILE
+
+    # share create volume permission
+    aws ec2 modify-snapshot-attribute --snapshot-id $SNAPSHOT_ID --attribute createVolumePermission --operation-type add --user-ids ${ACCOUNT[i]} --profile $PROFILE
+
+    if [ $? -eq 0 ]; then
+      echo "[${i}] $PROFILE share $AMI to Account \"${ACCOUNT[i]}\" successful"
+    else
+      echo "ami share fail."
+    fi
+  done
+}
+
+if [ -z $1 ];then
+  helpmsg
+elif [ -n $ENV ] && [ -n $AMI ];then
+  Share_Work
+else
+  echo "ami share need \'ENV\' and \'AMI\'"
+  exit 1
+fi
+
