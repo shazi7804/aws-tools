@@ -24,7 +24,7 @@ You need add profile to `~/.aws/{config,credentials}`
 $ ./ami2sync your_account ami-57464e30
 ```
 
-## ## CloudWatch tools
+## CloudWatch tools
 
 - ec2-publish-metrics-cloudwatch.sh
 Auto get Instance-id/Instance-type pubish cloudwatch.
